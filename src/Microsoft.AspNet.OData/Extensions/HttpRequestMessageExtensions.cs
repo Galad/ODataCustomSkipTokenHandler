@@ -226,6 +226,31 @@ namespace Microsoft.AspNet.OData.Extensions
         }
 
         /// <summary>
+        /// Creates a link for the next page of results; To be used as the value of @odata.nextLink.
+        /// </summary>
+        /// <param name="request">The request on which to base the next page link.</param>
+        /// <param name="pageSize">The number of results allowed per page.</param>
+        /// <param name="lastValue">The object </param>
+        /// <param name="objToSkipTokenValue">Function that extracts out the skiptoken value from the object</param>
+        /// <returns>A next page link.</returns>
+        public static Uri GetNextPageLink(this HttpRequestMessage request, int pageSize, object lastValue, Func<object, string> objToSkipTokenValue)
+        {
+            if (request == null || request.RequestUri == null)
+            {
+                throw Error.ArgumentNull("request");
+            }
+
+            Uri requestUri = request.RequestUri;
+
+            if (!requestUri.IsAbsoluteUri)
+            {
+                throw Error.ArgumentUriNotAbsolute("request", requestUri);
+            }
+
+            return GetNextPageHelper.GetNextPageLink(requestUri, request.GetQueryNameValuePairs(), pageSize, lastValue, objToSkipTokenValue);
+        }
+
+        /// <summary>
         /// Gets the dependency injection container for the OData request.
         /// </summary>
         /// <param name="request">The request.</param>

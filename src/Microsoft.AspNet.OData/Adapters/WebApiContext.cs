@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.OData.Common;
 using Microsoft.AspNet.OData.Extensions;
+using Microsoft.AspNet.OData.Formatter.Serialization;
 using Microsoft.AspNet.OData.Interfaces;
+using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNet.OData.Routing.Conventions;
 using Microsoft.OData.UriParser;
 using Microsoft.OData.UriParser.Aggregation;
@@ -56,6 +58,15 @@ namespace Microsoft.AspNet.OData.Adapters
         }
 
         /// <summary>
+        /// Gets or sets the next link function for the OData response.
+        /// </summary>
+        public Func<object, ODataSerializerContext, Uri> NextLinkFunc
+        {
+            get { return this.innerContext.NextLinkFunc; }
+            set { this.innerContext.NextLinkFunc = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the delta link for the OData response.
         /// </summary>
         public Uri DeltaLink
@@ -99,12 +110,30 @@ namespace Microsoft.AspNet.OData.Adapters
         }
 
         /// <summary>
+        /// Gets or sets the parsed OData <see cref="ODataQueryOptions"/> of the request.
+        /// </summary>
+        public ODataQueryOptions QueryOptions
+        {
+            get { return this.innerContext.QueryOptions; }
+            set { this.innerContext.QueryOptions = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the total count for the OData response.
         /// </summary>
         /// <value><c>null</c> if no count should be sent back to the client.</value>
         public long? TotalCount
         {
             get { return this.innerContext.TotalCount; }
+        }
+
+        /// <summary>
+        /// Gets or sets the page size.
+        /// </summary>
+        public int PageSize
+        {
+            get { return this.innerContext.PageSize; }
+            set { this.innerContext.PageSize = value; }
         }
 
         /// <summary>
