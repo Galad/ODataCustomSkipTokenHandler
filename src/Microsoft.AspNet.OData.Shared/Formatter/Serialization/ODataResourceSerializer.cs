@@ -769,7 +769,7 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
             Contract.Assert(resourceContext != null);
             Contract.Assert(writer != null);
             SelectExpandClause selectExpandClause = null;
-            if (expandedNavigationSelectItem !=null)
+            if (expandedNavigationSelectItem != null)
             {
                 selectExpandClause = expandedNavigationSelectItem.SelectAndExpand;
             }

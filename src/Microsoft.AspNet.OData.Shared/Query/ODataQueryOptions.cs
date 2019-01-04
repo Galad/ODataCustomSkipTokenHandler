@@ -448,7 +448,7 @@ namespace Microsoft.AspNet.OData.Query
                     }
                     else
                     {
-                        InternalRequest.Context.NextLink =  InternalRequest.GetNextPageLink(pageSize);
+                        InternalRequest.Context.NextLink = InternalRequest.GetNextPageLink(pageSize);
                     }
                 }
             }

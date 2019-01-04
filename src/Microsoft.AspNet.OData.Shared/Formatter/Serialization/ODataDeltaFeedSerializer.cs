@@ -216,7 +216,8 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
         /// <returns></returns>
         public virtual Func<object, Uri> GetNextLinkGenerator(ODataDeltaResourceSet deltaFeed, IEnumerable enumerable, IEdmCollectionTypeReference edmCollectionTypeReference, ODataSerializerContext writeContext)
         {
-            return (obj) => { return deltaFeed.NextPageLink; };
+            Uri defaultUri = deltaFeed.NextPageLink;
+            return (obj) => { return defaultUri; };
         }
 
         /// <summary>

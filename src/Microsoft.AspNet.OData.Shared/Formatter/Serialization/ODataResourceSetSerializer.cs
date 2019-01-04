@@ -249,7 +249,11 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
         public virtual Func<Object, Uri> GetNextLinkGenerator(ODataResourceSetBase resourceSet, IEnumerable resourceSetInstance, IEdmCollectionTypeReference resourceSetType,
             ODataSerializerContext writeContext)
         {
-            Uri defaultUri = resourceSet.NextPageLink;
+            Uri defaultUri = null;
+            if (resourceSet != null)
+            {
+                defaultUri = resourceSet.NextPageLink;
+            }
             if (writeContext.ExpandedResource == null)
             {
                 PageResult odataResourceSetAnnotations = resourceSetInstance as PageResult;
