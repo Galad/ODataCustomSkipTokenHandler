@@ -84,10 +84,10 @@ namespace Microsoft.AspNet.OData.Interfaces
         /// Get the next page link for a given page size.
         /// </summary>
         /// <param name="pageSize">The page size.</param>
-        /// <param name="lastValue">The last object that was sent.</param>
+        /// <param name="instance">The instance based on which the skiptoken value is generated</param>
         /// <param name="objToSkipTokenValue">Function that takes in the last object and returns the skiptoken value string.</param>
         /// <returns></returns>
-        Uri GetNextPageLink(int pageSize, object lastValue, Func<object, string> objToSkipTokenValue);
+        Uri GetNextPageLink(int pageSize, object instance, Func<object, string> objToSkipTokenValue);
 
         /// <summary>
         /// Get the next page link for a given page size.

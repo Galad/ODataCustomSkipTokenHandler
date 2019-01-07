@@ -1975,7 +1975,7 @@ public sealed class Microsoft.AspNet.OData.Extensions.HttpRequestMessageExtensio
 	[
 	ExtensionAttribute(),
 	]
-	public static System.Uri GetNextPageLink (System.Net.Http.HttpRequestMessage request, int pageSize, object lastValue, System.Func`2[[System.Object],[System.String]] objToSkipTokenValue)
+	public static System.Uri GetNextPageLink (System.Net.Http.HttpRequestMessage request, int pageSize, object instance, System.Func`2[[System.Object],[System.String]] objToSkipTokenValue)
 
 	[
 	ExtensionAttribute(),

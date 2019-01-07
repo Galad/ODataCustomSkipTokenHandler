@@ -1853,7 +1853,7 @@ public sealed class Microsoft.AspNet.OData.Extensions.HttpRequestExtensions {
 	[
 	ExtensionAttribute(),
 	]
-	public static System.Uri GetNextPageLink (Microsoft.AspNetCore.Http.HttpRequest request, int pageSize, params object lastValue, params System.Func`2[[System.Object],[System.String]] objectToSkipTokenValue)
+	public static System.Uri GetNextPageLink (Microsoft.AspNetCore.Http.HttpRequest request, int pageSize, params object instance, params System.Func`2[[System.Object],[System.String]] objectToSkipTokenValue)
 
 	[
 	ExtensionAttribute(),
