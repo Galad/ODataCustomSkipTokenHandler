@@ -89,7 +89,6 @@ namespace Microsoft.AspNet.OData.Query
         /// </summary>
         public SkipTokenHandler SkipTokenHandler { get; set; }
 
-
         /// <summary>
         /// Gets the value of the $skiptoken.
         /// </summary>

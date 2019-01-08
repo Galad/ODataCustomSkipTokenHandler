@@ -87,7 +87,7 @@ namespace Microsoft.AspNet.OData.Query
             {
                 return GenerateSkipTokenValue(obj, model, orderByNodes);
             };
-            return context.InternalRequest.GetNextPageLink(context.InternalRequest.Context.PageSize, lastMember, skipTokenGenerator);
+            return context.InternalRequest.GetNextPageLink(context.InternalRequest.Context.PageSize, lastMember, skipTokenGenerator); ;
         }
 
         /// <summary>

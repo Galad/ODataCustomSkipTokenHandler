@@ -2728,6 +2728,7 @@ public class Microsoft.AspNet.OData.Query.SkipTokenQueryOption {
 	public SkipTokenQueryOption (string rawValue, ODataQueryContext context, Microsoft.OData.UriParser.ODataQueryOptionParser queryOptionParser)
 
 	string RawValue  { public get; }
+	SkipTokenHandler SkipTokenHandler  { public get; public set; }
 	SkipTokenQueryValidator Validator  { public get; public set; }
 	string Value  { public get; }
 

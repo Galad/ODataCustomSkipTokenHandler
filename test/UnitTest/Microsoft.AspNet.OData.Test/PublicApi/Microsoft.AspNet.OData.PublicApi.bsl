@@ -2038,7 +2038,6 @@ public class Microsoft.AspNet.OData.Extensions.HttpRequestMessageProperties {
 	Microsoft.OData.UriParser.Aggregation.ApplyClause ApplyClause  { public get; public set; }
 	System.Uri DeltaLink  { public get; public set; }
 	System.Uri NextLink  { public get; public set; }
-	System.Func`3[[System.Object],[Microsoft.AspNet.OData.Formatter.Serialization.ODataSerializerContext],[System.Uri]] NextLinkFunc  { public get; public set; }
 	int PageSize  { public get; public set; }
 	ODataPath Path  { public get; public set; }
 	ODataQueryOptions QueryOptions  { public get; public set; }
@@ -2577,6 +2576,7 @@ public class Microsoft.AspNet.OData.Query.SkipTokenQueryOption {
 	public SkipTokenQueryOption (string rawValue, ODataQueryContext context, Microsoft.OData.UriParser.ODataQueryOptionParser queryOptionParser)
 
 	string RawValue  { public get; }
+	SkipTokenHandler SkipTokenHandler  { public get; public set; }
 	SkipTokenQueryValidator Validator  { public get; public set; }
 	string Value  { public get; }
 

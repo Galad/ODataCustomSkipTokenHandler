@@ -427,6 +427,11 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
         private static Uri GenerateQueryFromExpandedItem(ODataSerializerContext writeContext, Uri navigationLink, out IList<OrderByNode> orderByNodes)
         {
             IWebApiUrlHelper urlHelper = writeContext.InternalUrlHelper;
+            if (urlHelper == null)
+            {
+                orderByNodes = null;
+                return navigationLink;
+            }
             string serviceRoot = urlHelper.CreateODataLink(
                 writeContext.InternalRequest.Context.RouteName,
                 writeContext.InternalRequest.PathHandler,
@@ -441,6 +446,8 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
                 newUri.Filter = writeContext.ExpandedNavigationSelectItem.FilterOption;
                 newUri.Skip = writeContext.ExpandedNavigationSelectItem.SkipOption;
                 newUri.Top = writeContext.ExpandedNavigationSelectItem.TopOption;
+                newUri.SelectAndExpand = writeContext.ExpandedNavigationSelectItem.SelectAndExpand;
+                newUri.QueryCount = writeContext.ExpandedNavigationSelectItem.CountOption.HasValue;
             }
 
             if (newUri.OrderBy != null)
@@ -452,7 +459,7 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
                 orderByNodes = null;
             }
             
-            return newUri.BuildUri(ODataUrlKeyDelimiter.Slash);
+            return newUri.BuildUri(ODataUrlKeyDelimiter.Parentheses);
         }
 
         private static IEdmStructuredTypeReference GetResourceType(IEdmTypeReference resourceSetType)
