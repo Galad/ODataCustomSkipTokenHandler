@@ -9,8 +9,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using Microsoft.AspNet.OData.Common;
 using Microsoft.AspNet.OData.Formatter;
-using Microsoft.AspNet.OData.Formatter.Serialization;
-using Microsoft.AspNet.OData.Interfaces;
 using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNet.OData.Routing;
 using Microsoft.AspNet.OData.Routing.Conventions;
@@ -40,7 +38,6 @@ namespace Microsoft.AspNet.OData.Extensions
         private const string ApplyClauseKey = "Microsoft.AspNet.OData.ApplyClause";
         private const string TotalCountKey = "Microsoft.AspNet.OData.TotalCount";
         private const string TotalCountFuncKey = "Microsoft.AspNet.OData.TotalCountFunc";
-        private const string NextLinkFuncKey = "Microsoft.AspNet.OData.NextLinkFunc";
         private const string PageSizeKey = "Microsoft.AspNet.OData.PageSize";
 
         private HttpRequestMessage _request;
@@ -147,28 +144,6 @@ namespace Microsoft.AspNet.OData.Extensions
             set
             {
                 _request.Properties[TotalCountKey] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the next link for the OData response.
-        /// </summary>
-        /// <value><c>null</c> if no next link should be sent back to the client.</value>
-        public Func<object, ODataSerializerContext, Uri> NextLinkFunc
-        {
-            get
-            {
-                object nextLinkFunc;
-                if (_request.Properties.TryGetValue(NextLinkFuncKey, out nextLinkFunc))
-                {
-                    return (Func<object, ODataSerializerContext, Uri>)nextLinkFunc;
-                }
-
-                return null;
-            }
-            set
-            {
-                _request.Properties[NextLinkFuncKey] = value;
             }
         }
 

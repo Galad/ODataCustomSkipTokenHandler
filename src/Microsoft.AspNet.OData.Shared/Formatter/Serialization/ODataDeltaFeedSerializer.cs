@@ -157,6 +157,7 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
                         throw new SerializationException(SRResources.NullElementInCollection);
                     }
 
+                    lastObject = entry;
                     IEdmChangedObject edmChangedObject = entry as IEdmChangedObject;
                     if (edmChangedObject == null)
                     {

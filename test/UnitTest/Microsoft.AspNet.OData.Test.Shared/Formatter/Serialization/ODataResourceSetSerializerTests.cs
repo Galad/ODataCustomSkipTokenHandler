@@ -433,7 +433,6 @@ namespace Microsoft.AspNet.OData.Test.Formatter.Serialization
             // Arrange
             IEnumerable instance = new object[0];
             ODataResourceSet resourceSet = new ODataResourceSet { NextPageLink = new Uri("http://nextlink.com/") };
-            Func<object, Uri> function = (obj) => { return resourceSet.NextPageLink; };
             Mock<ODataResourceSetSerializer> serializer = new Mock<ODataResourceSetSerializer>(_serializerProvider);
             serializer.CallBase = true;
             serializer.Setup(s => s.CreateResourceSet(instance, _customersType, _writeContext)).Returns(resourceSet);

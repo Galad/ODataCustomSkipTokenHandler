@@ -28,7 +28,15 @@ namespace Microsoft.AspNet.OData.Query.Validators
             {
                 throw Error.ArgumentNull("validationSettings");
             }
-            //See what additional checks need to be in place given the validation settings
+
+            if (skipToken.SkipTokenHandler != null && skipToken.SkipTokenHandler.Context != null)
+            {
+                DefaultQuerySettings defaultSetting = skipToken.SkipTokenHandler.Context.DefaultQuerySettings;
+                if (!defaultSetting.EnableSkipToken && ((AllowedQueryOptions.SkipToken & validationSettings.AllowedQueryOptions) == AllowedQueryOptions.None))
+                {
+                    throw new ODataException(Error.Format(SRResources.NotAllowedQueryOption, AllowedQueryOptions.SkipToken, "AllowedQueryOptions"));
+                }
+            }
         }
 
         internal static SkipTokenQueryValidator GetSkipTokenQueryValidator(ODataQueryContext context)
