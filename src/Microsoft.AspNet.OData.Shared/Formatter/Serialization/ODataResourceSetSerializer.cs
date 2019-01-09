@@ -447,7 +447,11 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
                 newUri.Skip = writeContext.ExpandedNavigationSelectItem.SkipOption;
                 newUri.Top = writeContext.ExpandedNavigationSelectItem.TopOption;
                 newUri.SelectAndExpand = writeContext.ExpandedNavigationSelectItem.SelectAndExpand;
-                newUri.QueryCount = writeContext.ExpandedNavigationSelectItem.CountOption.HasValue;
+                if (writeContext.ExpandedNavigationSelectItem.CountOption.HasValue)
+                {
+                    newUri.QueryCount = writeContext.ExpandedNavigationSelectItem.CountOption.Value;
+                }
+                
             }
 
             if (newUri.OrderBy != null)

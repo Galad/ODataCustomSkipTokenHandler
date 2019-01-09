@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.  All rights reserved.
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -26,7 +27,7 @@ namespace Microsoft.Test.E2E.AspNet.OData.ModelBoundQuerySettings.PageAttributeT
             configuration.AddControllers(typeof(CustomersController), typeof(OrdersController));
             configuration.JsonReferenceLoopHandling =
                 Newtonsoft.Json.ReferenceLoopHandling.Ignore;
-            configuration.MaxTop(2).Expand().Filter().OrderBy().SkipToken();
+            configuration.MaxTop(4).Expand().Filter().OrderBy().SkipToken();
             configuration.MapODataServiceRoute("skiptokentest", "skiptokentest",
                 SkipTokenEdmModel.GetEdmModel(configuration));
         }
@@ -201,6 +202,32 @@ namespace Microsoft.Test.E2E.AspNet.OData.ModelBoundQuerySettings.PageAttributeT
             string result = await response.Content.ReadAsStringAsync();
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains(expected, result);
+        }
+
+        [Theory]
+        [InlineData("$orderBy=Name", "Details?$orderby=Name&$skiptoken=Name:'2ndOrder',Id:2")]
+        [InlineData("$orderBy=Name desc", "$skiptoken=Name:'3rdOrder',Id:3")]
+        [InlineData("$orderBy=Name;$skip=1", "Details?$orderby=Name&$skiptoken=Name:'3rdOrder',Id:3")]
+        [InlineData("$orderBy=Name;$top=3;$skip=1", "Details?$orderby=Name&$top=1&$skiptoken=Name:'3rdOrder',Id:3")]
+        public async Task NestedNestedQueryOptionInNextPageLink(string queryOption, string expected)
+        {
+            // Arrange
+            string queryUrl = string.Format(CustomerBaseUrl +
+                    "?$expand=Orders($expand=Details(" + queryOption + "))", BaseAddress);
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, queryUrl);
+            request.Headers.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/json;odata.metadata=none"));
+            HttpClient client = new HttpClient();
+
+            // Act
+            HttpResponseMessage response = await client.SendAsync(request);
+
+            // Assert
+            Assert.NotNull(response);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            Assert.NotNull(response.Content);
+            String result = await response.Content.ReadAsStringAsync();
             Assert.Contains(expected, result);
         }
 

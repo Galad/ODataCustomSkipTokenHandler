@@ -36,6 +36,29 @@ namespace Microsoft.Test.E2E.AspNet.OData.ModelBoundQuerySettings.PageAttributeT
         public void Generate()
         {
             _customers = new List<Customer>();
+            List<OrderDetail> details = new List<OrderDetail>
+                            {
+                                new OrderDetail()
+                                {
+                                    Id = 1,
+                                    Name = "1stOrder",
+                                },
+                                new OrderDetail()
+                                {
+                                    Id = 2,
+                                    Name = "2ndOrder",
+                                },
+                                new OrderDetail()
+                                {
+                                    Id = 3,
+                                    Name = "3rdOrder"
+                                },
+                                new OrderDetail()
+                                {
+                                    Id = 4,
+                                    Name = "4thOrder"
+                                }
+                            };
             for (int i = 1; i < 10; i++)
             {
                 var customer = new Customer
@@ -60,15 +83,19 @@ namespace Microsoft.Test.E2E.AspNet.OData.ModelBoundQuerySettings.PageAttributeT
                     {
                         new Order
                         {
-                            Id = i * 3 - 2
+                            Id = i * 3 - 2,
+                            Details = details
+                            
                         },
                         new Order
                         {
-                            Id = i * 3-1
+                            Id = i * 3-1,
+                            Details = details
                         },
                         new Order
                         {
-                            Id = i * 3
+                            Id = i * 3,
+                            Details = details
                         }
                     },
                     Addresses = new List<Address>()

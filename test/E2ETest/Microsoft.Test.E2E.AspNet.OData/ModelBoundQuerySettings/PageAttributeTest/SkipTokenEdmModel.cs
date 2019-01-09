@@ -45,9 +45,19 @@ namespace Microsoft.Test.E2E.AspNet.OData.ModelBoundQuerySettings.PageAttributeT
 
         public string Name { get; set; }
 
+        public IList<OrderDetail> Details { get; set;}
+
         public int Price { get; set; }
         [Page]
         public List<Customer> Customers { get; set; }
+    }
+
+    [Page(PageSize = 2)]
+    public class OrderDetail
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int Amount { get; set; }
     }
 
     public class SpecialOrder : Order
@@ -70,6 +80,7 @@ namespace Microsoft.Test.E2E.AspNet.OData.ModelBoundQuerySettings.PageAttributeT
             var builder = configuration.CreateConventionModelBuilder();
             builder.EntitySet<Customer>("Customers");
             builder.EntitySet<Order>("Orders");
+            builder.EntitySet<OrderDetail>("Details");
             IEdmModel model = builder.GetEdmModel();
             return model;
         }
