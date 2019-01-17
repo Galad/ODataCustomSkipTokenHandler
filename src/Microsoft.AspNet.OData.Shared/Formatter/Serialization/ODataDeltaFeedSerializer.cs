@@ -196,10 +196,8 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
                 // the next page link is not set when calling WriteStart(feed) but is instead set later on that feed
                 // object before calling WriteEnd(), the next page link will be written at the end, as required for
                 // odata.streaming=true support.
-                if (nextLinkGenerator != null)
-                {
-                    deltaFeed.NextPageLink = nextLinkGenerator(lastObject);
-                }
+
+                deltaFeed.NextPageLink = nextLinkGenerator(lastObject);
             }
 
             //End Writing of the Delta Feed

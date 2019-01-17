@@ -231,7 +231,7 @@ namespace Microsoft.AspNet.OData.Extensions
         /// <param name="request">The request on which to base the next page link.</param>
         /// <param name="pageSize">The number of results allowed per page.</param>
         /// <param name="instance">The instance based on which the skiptoken value is generated. </param>
-        /// <param name="objToSkipTokenValue">Function that extracts out the skiptoken value from the object</param>
+        /// <param name="objToSkipTokenValue">Function that extracts out the skiptoken value from the instance.</param>
         /// <returns>A next page link.</returns>
         public static Uri GetNextPageLink(this HttpRequestMessage request, int pageSize, object instance, Func<object, string> objToSkipTokenValue)
         {

@@ -154,10 +154,8 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
             // object before calling WriteEnd(), the next page link will be written at the end, as required for
             // odata.streaming=true support.
 
-            if (nextLinkGenerator != null)
-            {
-                resourceSet.NextPageLink = nextLinkGenerator(lastMember);
-            }
+            resourceSet.NextPageLink = nextLinkGenerator(lastMember);
+
 
             writer.WriteEnd();
         }
@@ -379,6 +377,7 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
                 }
             }
         }
+
         private static Uri GetNestedNextPageLink(ODataSerializerContext writeContext, int pageSize)
         {
             Contract.Assert(writeContext.ExpandedResource != null);
@@ -396,7 +395,7 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
             return null;
         }
 
-        private static Uri GetNestedNextPageLink(ODataSerializerContext writeContext, int pageSize, object obj = null)
+        private static Uri GetNestedNextPageLink(ODataSerializerContext writeContext, int pageSize, object obj)
         {
             Contract.Assert(writeContext.ExpandedResource != null);
             IEdmNavigationSource sourceNavigationSource = writeContext.ExpandedResource.NavigationSource;
