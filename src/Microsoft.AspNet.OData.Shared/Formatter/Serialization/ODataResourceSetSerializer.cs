@@ -156,7 +156,6 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
 
             resourceSet.NextPageLink = nextLinkGenerator(lastMember);
 
-
             writer.WriteEnd();
         }
 
@@ -450,7 +449,6 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
                 {
                     newUri.QueryCount = writeContext.ExpandedNavigationSelectItem.CountOption.Value;
                 }
-                
             }
 
             if (newUri.OrderBy != null)

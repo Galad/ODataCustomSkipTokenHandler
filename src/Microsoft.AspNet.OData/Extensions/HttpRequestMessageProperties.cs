@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.OData.Extensions
         }
 
         /// <summary>
-        /// Gets or sets the page size.
+        /// Page size to be used by skiptoken implementation for the top-level resource for the request. 
         /// </summary>
         public int PageSize
         {

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.OData.Formatter.Serialization;
 using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -67,9 +66,8 @@ namespace Microsoft.AspNet.OData.Interfaces
         long? TotalCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the PageSize for the OData response.
+        /// Page size to be used by skiptoken implementation for the top-level resource for the request. 
         /// </summary>
-        /// <value><c>null</c> if no count should be sent back to the client.</value>
         int PageSize { get; set; }
 
         /// <summary>
@@ -88,7 +86,7 @@ namespace Microsoft.AspNet.OData.Interfaces
         SelectExpandClause SelectExpandClause { get; set; }
 
         /// <summary>
-        /// Gets or sets the parsed OData <see cref="OrderByClause"/> of the request.
+        /// Gets or sets the parsed <see cref="ODataQueryOptions"/> of the request.
         /// </summary>
         ODataQueryOptions QueryOptions { get; set; }
 

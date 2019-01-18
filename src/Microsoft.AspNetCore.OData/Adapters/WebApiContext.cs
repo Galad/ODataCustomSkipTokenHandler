@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNet.OData.Formatter.Serialization;
 using Microsoft.AspNet.OData.Interfaces;
 using Microsoft.AspNet.OData.Query;
 using Microsoft.OData.UriParser;
@@ -94,7 +93,7 @@ namespace Microsoft.AspNet.OData.Adapters
         }
 
         /// <summary>
-        /// Gets or sets the parsed OData <see cref="SelectExpandClause"/> of the request.
+        /// Gets or sets the parsed <see cref="ODataQueryOptions"/> of the request.
         /// </summary>
         public ODataQueryOptions QueryOptions
         {
@@ -112,9 +111,8 @@ namespace Microsoft.AspNet.OData.Adapters
         }
 
         /// <summary>
-        /// Gets or sets the total count for the OData response.
+        /// Page size to be used by skiptoken implementation for the top-level resource for the request. 
         /// </summary>
-        /// <value><c>null</c> if no count should be sent back to the client.</value>
         public int PageSize
         {
             get { return this.innerFeature.PageSize; }
