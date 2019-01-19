@@ -31,9 +31,8 @@ namespace Microsoft.AspNet.OData.Query
         /// </summary>
         public DefaultSkipTokenHandler()
         {
-            base.IsDeltaFeedSupported = false;
+            IsDeltaFeedSupported = false;
         }
-
 
         /// <summary>
         /// Constructor for Unit testing purposes - Sets the Property Delimiter
@@ -41,7 +40,7 @@ namespace Microsoft.AspNet.OData.Query
         public DefaultSkipTokenHandler(char delimiter)
         {
             _propertyDelimiter = delimiter;
-            base.IsDeltaFeedSupported = false;
+            IsDeltaFeedSupported = false;
         }
 
         /// <summary>
@@ -83,7 +82,6 @@ namespace Microsoft.AspNet.OData.Query
                     }
                 }
             }
-
         }
 
         /// <summary>

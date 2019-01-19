@@ -215,10 +215,10 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
         /// <returns></returns>
         internal virtual Func<object, Uri> GetNextLinkGenerator(ODataDeltaResourceSet deltaFeed, IEnumerable enumerable, IEdmCollectionTypeReference edmCollectionTypeReference, ODataSerializerContext writeContext)
         {
-            if (writeContext.InternalRequest.Context.QueryOptions != null)
+            if (writeContext.InternalRequest != null && writeContext.InternalRequest.Context.QueryOptions != null)
             {
                 SkipTokenHandler nextLinkGenerator = SkipTokenQueryOption.GetSkipTokenImplementation(writeContext.InternalRequest.Context.QueryOptions.Context);
-                if (nextLinkGenerator.IsDeltaFeedSupported)
+                if (nextLinkGenerator != null && nextLinkGenerator.IsDeltaFeedSupported)
                 {
                     return (obj) => nextLinkGenerator.GenerateNextPageLink(writeContext.InternalRequest.RequestUri, writeContext.InternalRequest.Context.PageSize, obj, writeContext);
                 }

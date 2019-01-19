@@ -281,7 +281,6 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
                 ITruncatedCollection truncatedCollection = resourceSetInstance as ITruncatedCollection;
                 if (truncatedCollection != null && truncatedCollection.IsTruncated)
                 {
-
                    return (obj) => { return GetNestedNextPageLink(writeContext, truncatedCollection.PageSize, obj); };
                 }
             }
