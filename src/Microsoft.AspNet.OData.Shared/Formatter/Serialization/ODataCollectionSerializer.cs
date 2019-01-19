@@ -95,7 +95,7 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
                 {
                     // Collection serializer is called only for collection of primitive values - A null object will be supplied since it is a non-entity value
                     SkipTokenHandler skipTokenHandler = SkipTokenQueryOption.GetSkipTokenImplementation(writeContext.QueryOptions.Context);
-                    collectionStart.NextPageLink = skipTokenHandler.GenerateNextPageLink(null, writeContext);
+                    collectionStart.NextPageLink = skipTokenHandler.GenerateNextPageLink(writeContext.InternalRequest.RequestUri, writeContext.InternalRequest.Context.PageSize, null, writeContext);
                 }
 
                 if (writeContext.InternalRequest.Context.TotalCount != null)

@@ -243,7 +243,7 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
         /// <param name="resourceSetType">The EDM type of the resourceSet being written.</param>
         /// <param name="writeContext">The serializer context.</param>
         /// <returns>The function that generates the NextLink from an object.</returns>
-        public virtual Func<Object, Uri> GetNextLinkGenerator(ODataResourceSetBase resourceSet, IEnumerable resourceSetInstance, IEdmCollectionTypeReference resourceSetType,
+        internal virtual Func<Object, Uri> GetNextLinkGenerator(ODataResourceSetBase resourceSet, IEnumerable resourceSetInstance, IEdmCollectionTypeReference resourceSetType,
             ODataSerializerContext writeContext)
         {
             Uri defaultUri = null;
@@ -270,7 +270,7 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
                         if (settings.EnableSkipToken)
                         {
                             SkipTokenHandler handler = SkipTokenQueryOption.GetSkipTokenImplementation(writeContext.QueryOptions.Context);
-                            return (obj) => { return handler.GenerateNextPageLink(obj, writeContext); };
+                            return (obj) => { return handler.GenerateNextPageLink(writeContext.InternalRequest.RequestUri, writeContext.InternalRequest.Context.PageSize, obj, writeContext); };
                         }
                     }
                 }
@@ -281,6 +281,7 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
                 ITruncatedCollection truncatedCollection = resourceSetInstance as ITruncatedCollection;
                 if (truncatedCollection != null && truncatedCollection.IsTruncated)
                 {
+
                    return (obj) => { return GetNestedNextPageLink(writeContext, truncatedCollection.PageSize, obj); };
                 }
             }
@@ -401,33 +402,34 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
             NavigationSourceLinkBuilderAnnotation linkBuilder = writeContext.Model.GetNavigationSourceLinkBuilder(sourceNavigationSource);
             Uri navigationLink =
                 linkBuilder.BuildNavigationLink(writeContext.ExpandedResource, writeContext.NavigationProperty);
-            IList<OrderByNode> orderByNodes = null;
-            Func<object, string> skipTokenGenerator = null;
-            Uri nestedNextLink = GenerateQueryFromExpandedItem(writeContext, navigationLink, out orderByNodes);
+            Uri nestedNextLink = GenerateQueryFromExpandedItem(writeContext, navigationLink);
+            SkipTokenHandler nextLinkGenerator = null;
             if (writeContext.QueryOptions != null)
             {
                 DefaultQuerySettings settings = writeContext.QueryOptions.Context.DefaultQuerySettings;
                 if (settings.EnableSkipToken)
                 {
-                    SkipTokenHandler handler = SkipTokenQueryOption.GetSkipTokenImplementation(writeContext.QueryOptions.Context);
-                    skipTokenGenerator = (member) => { return handler.GenerateSkipTokenValue(member, writeContext.Model, orderByNodes); };
+                    nextLinkGenerator = SkipTokenQueryOption.GetSkipTokenImplementation(writeContext.QueryOptions.Context);
                 }
             }
 
             if (nestedNextLink != null)
             {
-                return GetNextPageHelper.GetNextPageLink(nestedNextLink, pageSize, obj, skipTokenGenerator);
+                if (nextLinkGenerator != null)
+                {
+                    return nextLinkGenerator.GenerateNextPageLink(nestedNextLink, pageSize, obj, writeContext);
+                }
+                return GetNextPageHelper.GetNextPageLink(nestedNextLink, pageSize);
             }
 
             return null;
         }
 
-        private static Uri GenerateQueryFromExpandedItem(ODataSerializerContext writeContext, Uri navigationLink, out IList<OrderByNode> orderByNodes)
+        private static Uri GenerateQueryFromExpandedItem(ODataSerializerContext writeContext, Uri navigationLink)
         {
             IWebApiUrlHelper urlHelper = writeContext.InternalUrlHelper;
             if (urlHelper == null)
             {
-                orderByNodes = null;
                 return navigationLink;
             }
             string serviceRoot = urlHelper.CreateODataLink(
@@ -449,15 +451,6 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
                 {
                     newUri.QueryCount = writeContext.ExpandedNavigationSelectItem.CountOption.Value;
                 }
-            }
-
-            if (newUri.OrderBy != null)
-            {
-                orderByNodes = OrderByNode.CreateCollection(newUri.OrderBy);
-            }
-            else
-            {
-                orderByNodes = null;
             }
             
             return newUri.BuildUri(ODataUrlKeyDelimiter.Parentheses);

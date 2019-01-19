@@ -57,9 +57,8 @@ namespace Microsoft.Test.E2E.AspNet.OData.DependencyInjection
     public class MySkipTokenImplementation : DefaultSkipTokenHandler
     {
         public MySkipTokenImplementation()
-            : base()
+            : base('-')
         {
-            this.PropertyDelimiter = '-';
         }
     }
 }

@@ -51,8 +51,8 @@ namespace Microsoft.AspNet.OData.Query
             RawValue = rawValue;
             Validator = SkipTokenQueryValidator.GetSkipTokenQueryValidator(context);
             SkipTokenHandler = GetSkipTokenImplementation(context);
-            SkipTokenHandler.ProcessSkipTokenValue(rawValue);
             SkipTokenHandler.Context = context;
+            SkipTokenHandler.Value = rawValue;
             _queryOptionParser = queryOptionParser;
         }
 
@@ -111,6 +111,16 @@ namespace Microsoft.AspNet.OData.Query
         public SkipTokenQueryValidator Validator { get; set; }
 
         /// <summary>
+        /// Gets or sets the query setting 
+        /// </summary>
+        public ODataQuerySettings QuerySettings { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the list of OrderByNodes for the original query
+        /// </summary>
+        public IList<OrderByNode> OrderByNodes { get; private set; }
+
+        /// <summary>
         /// Apply the $skiptoken query to the given IQueryable.
         /// </summary>
         /// <param name="query">The original <see cref="IQueryable"/>.</param>
@@ -119,7 +129,9 @@ namespace Microsoft.AspNet.OData.Query
         /// <returns>The new <see cref="IQueryable"/> after the skiptoken query has been applied to.</returns>
         public IQueryable<T> ApplyTo<T>(IQueryable<T> query, ODataQuerySettings querySettings, IList<OrderByNode> orderByNodes)
         {
-            return SkipTokenHandler.ApplyTo<T>(query, querySettings, orderByNodes) as IOrderedQueryable<T>;
+            QuerySettings = querySettings;
+            OrderByNodes = orderByNodes;
+            return SkipTokenHandler.ApplyTo<T>(query, this) as IOrderedQueryable<T>;
         }
 
         /// <summary>
@@ -131,7 +143,9 @@ namespace Microsoft.AspNet.OData.Query
         /// <returns>The new <see cref="IQueryable"/> after the skiptoken query has been applied to.</returns>
         public IQueryable ApplyTo(IQueryable query, ODataQuerySettings querySettings, IList<OrderByNode> orderByNodes)
         {
-            return SkipTokenHandler.ApplyTo(query, querySettings, orderByNodes);
+            QuerySettings = querySettings;
+            OrderByNodes = orderByNodes;
+            return SkipTokenHandler.ApplyTo(query, this);
         }
 
         /// <summary>

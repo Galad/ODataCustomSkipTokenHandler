@@ -2435,12 +2435,12 @@ public abstract class Microsoft.AspNet.OData.Query.SkipTokenHandler {
 	protected SkipTokenHandler ()
 
 	ODataQueryContext Context  { public get; public set; }
+	bool IsDeltaFeedSupported  { public get; public set; }
+	string Value  { public abstract get; public abstract set; }
 
-	public abstract IQueryable`1 ApplyTo (IQueryable`1 query, ODataQuerySettings querySettings, System.Collections.Generic.IList`1[[Microsoft.AspNet.OData.Query.OrderByNode]] orderByNodes)
-	public abstract System.Linq.IQueryable ApplyTo (System.Linq.IQueryable query, ODataQuerySettings querySettings, System.Collections.Generic.IList`1[[Microsoft.AspNet.OData.Query.OrderByNode]] orderByNodes)
-	public abstract System.Uri GenerateNextPageLink (object lastMember, ODataSerializerContext context)
-	public abstract string GenerateSkipTokenValue (object lastMember, Microsoft.OData.Edm.IEdmModel model, System.Collections.Generic.IList`1[[Microsoft.AspNet.OData.Query.OrderByNode]] orderByNodes)
-	public abstract System.Collections.Generic.IDictionary`2[[System.String],[System.Object]] ProcessSkipTokenValue (string rawValue)
+	public abstract IQueryable`1 ApplyTo (IQueryable`1 query, SkipTokenQueryOption skipTokenQueryOption)
+	public abstract System.Linq.IQueryable ApplyTo (System.Linq.IQueryable query, SkipTokenQueryOption skipTokenQueryOption)
+	public abstract System.Uri GenerateNextPageLink (System.Uri baseUri, int pageSize, object instance, ODataSerializerContext context)
 }
 
 public class Microsoft.AspNet.OData.Query.ApplyQueryOption {
@@ -2480,14 +2480,15 @@ public class Microsoft.AspNet.OData.Query.DefaultQuerySettings {
 
 public class Microsoft.AspNet.OData.Query.DefaultSkipTokenHandler : SkipTokenHandler {
 	public DefaultSkipTokenHandler ()
+	public DefaultSkipTokenHandler (char delimiter)
 
 	char PropertyDelimiter  { public get; public set; }
+	string Value  { public virtual get; public virtual set; }
 
-	public virtual IQueryable`1 ApplyTo (IQueryable`1 query, ODataQuerySettings querySettings, System.Collections.Generic.IList`1[[Microsoft.AspNet.OData.Query.OrderByNode]] orderByNodes)
-	public virtual System.Linq.IQueryable ApplyTo (System.Linq.IQueryable query, ODataQuerySettings querySettings, System.Collections.Generic.IList`1[[Microsoft.AspNet.OData.Query.OrderByNode]] orderByNodes)
-	public virtual System.Uri GenerateNextPageLink (object lastMember, ODataSerializerContext context)
-	public virtual string GenerateSkipTokenValue (object lastMember, Microsoft.OData.Edm.IEdmModel model, System.Collections.Generic.IList`1[[Microsoft.AspNet.OData.Query.OrderByNode]] orderByNodes)
-	public virtual System.Collections.Generic.IDictionary`2[[System.String],[System.Object]] ProcessSkipTokenValue (string rawValue)
+	public virtual IQueryable`1 ApplyTo (IQueryable`1 query, SkipTokenQueryOption skipTokenQueryOption)
+	public virtual System.Linq.IQueryable ApplyTo (System.Linq.IQueryable query, SkipTokenQueryOption skipTokenQueryOption)
+	public virtual System.Uri GenerateNextPageLink (System.Uri baseUri, int pageSize, object instance, ODataSerializerContext context)
+	public string GenerateSkipTokenValue (object lastMember, Microsoft.OData.Edm.IEdmModel model, System.Collections.Generic.IList`1[[Microsoft.AspNet.OData.Query.OrderByNode]] orderByNodes)
 }
 
 public class Microsoft.AspNet.OData.Query.ExpandConfiguration {
@@ -2727,6 +2728,8 @@ public class Microsoft.AspNet.OData.Query.SkipQueryOption {
 public class Microsoft.AspNet.OData.Query.SkipTokenQueryOption {
 	public SkipTokenQueryOption (string rawValue, ODataQueryContext context, Microsoft.OData.UriParser.ODataQueryOptionParser queryOptionParser)
 
+	System.Collections.Generic.IList`1[[Microsoft.AspNet.OData.Query.OrderByNode]] OrderByNodes  { public get; }
+	ODataQuerySettings QuerySettings  { public get; }
 	string RawValue  { public get; }
 	SkipTokenHandler SkipTokenHandler  { public get; public set; }
 	SkipTokenQueryValidator Validator  { public get; public set; }
@@ -3332,7 +3335,7 @@ public class Microsoft.AspNet.OData.Formatter.Serialization.ODataDeltaFeedSerial
 	public ODataDeltaFeedSerializer (ODataSerializerProvider serializerProvider)
 
 	public virtual Microsoft.OData.ODataDeltaResourceSet CreateODataDeltaFeed (System.Collections.IEnumerable feedInstance, Microsoft.OData.Edm.IEdmCollectionTypeReference feedType, ODataSerializerContext writeContext)
-	public virtual System.Func`2[[System.Object],[System.Uri]] GetNextLinkGenerator (Microsoft.OData.ODataDeltaResourceSet deltaFeed, System.Collections.IEnumerable enumerable, Microsoft.OData.Edm.IEdmCollectionTypeReference edmCollectionTypeReference, ODataSerializerContext writeContext)
+	internal virtual System.Func`2[[System.Object],[System.Uri]] GetNextLinkGenerator (Microsoft.OData.ODataDeltaResourceSet deltaFeed, System.Collections.IEnumerable enumerable, Microsoft.OData.Edm.IEdmCollectionTypeReference edmCollectionTypeReference, ODataSerializerContext writeContext)
 	public virtual void WriteDeltaDeletedEntry (object graph, Microsoft.OData.ODataWriter writer, ODataSerializerContext writeContext)
 	public virtual void WriteDeltaDeletedLink (object graph, Microsoft.OData.ODataWriter writer, ODataSerializerContext writeContext)
 	public virtual void WriteDeltaFeedInline (object graph, Microsoft.OData.Edm.IEdmTypeReference expectedType, Microsoft.OData.ODataWriter writer, ODataSerializerContext writeContext)
@@ -3407,7 +3410,7 @@ public class Microsoft.AspNet.OData.Formatter.Serialization.ODataResourceSetSeri
 
 	public virtual Microsoft.OData.ODataOperation CreateODataOperation (Microsoft.OData.Edm.IEdmOperation operation, ResourceSetContext resourceSetContext, ODataSerializerContext writeContext)
 	public virtual Microsoft.OData.ODataResourceSet CreateResourceSet (System.Collections.IEnumerable resourceSetInstance, Microsoft.OData.Edm.IEdmCollectionTypeReference resourceSetType, ODataSerializerContext writeContext)
-	public virtual System.Func`2[[System.Object],[System.Uri]] GetNextLinkGenerator (Microsoft.OData.ODataResourceSetBase resourceSet, System.Collections.IEnumerable resourceSetInstance, Microsoft.OData.Edm.IEdmCollectionTypeReference resourceSetType, ODataSerializerContext writeContext)
+	internal virtual System.Func`2[[System.Object],[System.Uri]] GetNextLinkGenerator (Microsoft.OData.ODataResourceSetBase resourceSet, System.Collections.IEnumerable resourceSetInstance, Microsoft.OData.Edm.IEdmCollectionTypeReference resourceSetType, ODataSerializerContext writeContext)
 	public virtual void WriteObject (object graph, System.Type type, Microsoft.OData.ODataMessageWriter messageWriter, ODataSerializerContext writeContext)
 	public virtual void WriteObjectInline (object graph, Microsoft.OData.Edm.IEdmTypeReference expectedType, Microsoft.OData.ODataWriter writer, ODataSerializerContext writeContext)
 }

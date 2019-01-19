@@ -213,8 +213,16 @@ namespace Microsoft.AspNet.OData.Formatter.Serialization
         /// <param name="writeContext">The serializer context.</param>
         /// <returns>The function that generates the NextLink from an object.</returns>
         /// <returns></returns>
-        public virtual Func<object, Uri> GetNextLinkGenerator(ODataDeltaResourceSet deltaFeed, IEnumerable enumerable, IEdmCollectionTypeReference edmCollectionTypeReference, ODataSerializerContext writeContext)
+        internal virtual Func<object, Uri> GetNextLinkGenerator(ODataDeltaResourceSet deltaFeed, IEnumerable enumerable, IEdmCollectionTypeReference edmCollectionTypeReference, ODataSerializerContext writeContext)
         {
+            if (writeContext.InternalRequest.Context.QueryOptions != null)
+            {
+                SkipTokenHandler nextLinkGenerator = SkipTokenQueryOption.GetSkipTokenImplementation(writeContext.InternalRequest.Context.QueryOptions.Context);
+                if (nextLinkGenerator.IsDeltaFeedSupported)
+                {
+                    return (obj) => nextLinkGenerator.GenerateNextPageLink(writeContext.InternalRequest.RequestUri, writeContext.InternalRequest.Context.PageSize, obj, writeContext);
+                }
+            }
             Uri defaultUri = deltaFeed.NextPageLink;
             return (obj) => { return defaultUri; };
         }

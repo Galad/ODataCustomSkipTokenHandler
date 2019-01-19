@@ -2,6 +2,7 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Linq.Expressions;
 
@@ -22,72 +23,115 @@ namespace Microsoft.AspNet.OData.Query
     {
         private IDictionary<string, object> _propertyValuePairs;
         private const char CommaDelimiter = ',';
+        private string _value;
+        private char _propertyDelimiter = ':';
 
         /// <summary>
         /// Constructor for DefaultSkipTokenHandler - Sets the Property Delimiter
         /// </summary>
         public DefaultSkipTokenHandler()
         {
-            PropertyDelimiter = ':';
+            base.IsDeltaFeedSupported = false;
+        }
+
+
+        /// <summary>
+        /// Constructor for Unit testing purposes - Sets the Property Delimiter
+        /// </summary>
+        public DefaultSkipTokenHandler(char delimiter)
+        {
+            _propertyDelimiter = delimiter;
+            base.IsDeltaFeedSupported = false;
         }
 
         /// <summary>
         /// Process SkipToken Value to create string key - object value collection 
         /// </summary>
-        /// <param name="rawValue"></param>
-        public override IDictionary<string, object> ProcessSkipTokenValue(string rawValue)
+        public override string Value
         {
-            _propertyValuePairs = new Dictionary<string, object>();
-            string[] keyValues = rawValue.Split(CommaDelimiter);
-            foreach (string keyAndValue in keyValues)
+            get
             {
-                string[] pieces = keyAndValue.Split(new char[] { PropertyDelimiter }, 2);
-                if (pieces.Length > 1 && !String.IsNullOrWhiteSpace(pieces[1]))
+                return _value;
+            }
+            set
+            {
+                Contract.Assert(Context != null);
+
+                _value = value;
+                _propertyValuePairs = new Dictionary<string, object>();
+                string[] keyValues = _value.Split(CommaDelimiter);
+                foreach (string keyAndValue in keyValues)
                 {
-                    object value = null;
-                    if (pieces[1].StartsWith("'enumType'"))
+                    string[] pieces = keyAndValue.Split(new char[] { _propertyDelimiter }, 2);
+                    if (pieces.Length > 1 && !String.IsNullOrWhiteSpace(pieces[1]))
                     {
-                        string enumValue = pieces[1].Remove(0, 10);
-                        IEdmTypeReference type = EdmLibHelpers.GetTypeReferenceOfProperty(Context.Model, Context.ElementClrType, pieces[0]);
-                        value = ODataUriUtils.ConvertFromUriLiteral(enumValue, ODataVersion.V401, Context.Model, type);
-                    }
-                    else
-                    {
-                        value = ODataUriUtils.ConvertFromUriLiteral(pieces[1], ODataVersion.V401);
-                    }
-                    if (!String.IsNullOrWhiteSpace(pieces[0]))
-                    {
-                        _propertyValuePairs.Add(pieces[0], value);
+                        object propValue = null;
+                        if (pieces[1].StartsWith("'enumType'"))
+                        {
+                            string enumValue = pieces[1].Remove(0, 10);
+                            IEdmTypeReference type = EdmLibHelpers.GetTypeReferenceOfProperty(Context.Model, Context.ElementClrType, pieces[0]);
+                            propValue = ODataUriUtils.ConvertFromUriLiteral(enumValue, ODataVersion.V401, Context.Model, type);
+                        }
+                        else
+                        {
+                            propValue = ODataUriUtils.ConvertFromUriLiteral(pieces[1], ODataVersion.V401);
+                        }
+                        if (!String.IsNullOrWhiteSpace(pieces[0]))
+                        {
+                            _propertyValuePairs.Add(pieces[0], propValue);
+                        }
                     }
                 }
             }
-            return _propertyValuePairs;
+
         }
 
         /// <summary>
         /// Returns the URI for NextPageLink
         /// </summary>
-        /// <param name="lastMember"> Object based on which SkipToken value will be generated.</param>
+        /// <param name="baseUri">BaseUri for nextlink. It should be request URI for top level resource and navigationlink for nested resource.</param>
+        /// <param name="instance">Instance based on which SkipToken value will be generated.</param>
+        /// <param name="pageSize">Maximum number of records in the set of partial results for a resource.</param>
         /// <param name="context">Serializer context</param>
         /// <returns></returns>
-        public override Uri GenerateNextPageLink(Object lastMember, ODataSerializerContext context)
+        public override Uri GenerateNextPageLink(Uri baseUri, int pageSize, Object instance, ODataSerializerContext context)
         {
-            if (context == null || lastMember == null)
+            if (context == null || instance == null)
             {
                 return null;
             }
-            IEdmModel model = context.Model;
+
+            Func<object, string> skipTokenGenerator = null;
             IList<OrderByNode> orderByNodes = null;
-            if (context.QueryOptions.OrderBy != null)
+            ExpandedNavigationSelectItem expandedItem = context.ExpandedNavigationSelectItem;
+            IEdmModel model = context.Model;
+
+            if (expandedItem != null)
+            {
+                if (expandedItem.OrderByOption != null)
+                {
+                    orderByNodes = OrderByNode.CreateCollection(expandedItem.OrderByOption);
+                }
+
+                skipTokenGenerator = (obj) =>
+                {
+                    return GenerateSkipTokenValue(obj, model, orderByNodes);
+                };
+
+                return GetNextPageHelper.GetNextPageLink(baseUri, pageSize, instance, skipTokenGenerator);
+            }
+
+            if (context.QueryOptions != null && context.QueryOptions.OrderBy != null)
             {
                 orderByNodes = context.QueryOptions.OrderBy.OrderByNodes;
             }
 
-            Func<object, string> skipTokenGenerator = (obj) =>
+            skipTokenGenerator = (obj) =>
             {
                 return GenerateSkipTokenValue(obj, model, orderByNodes);
             };
-            return context.InternalRequest.GetNextPageLink(context.InternalRequest.Context.PageSize, lastMember, skipTokenGenerator);
+
+            return context.InternalRequest.GetNextPageLink(pageSize, instance, skipTokenGenerator);
         }
 
         /// <summary>
@@ -97,7 +141,7 @@ namespace Microsoft.AspNet.OData.Query
         /// <param name="model">The edm model.</param>
         /// <param name="orderByNodes">QueryOption </param>
         /// <returns></returns>
-        public override string GenerateSkipTokenValue(Object lastMember, IEdmModel model, IList<OrderByNode> orderByNodes)
+        public string GenerateSkipTokenValue(Object lastMember, IEdmModel model, IList<OrderByNode> orderByNodes)
         {
             object value;
             if (lastMember == null)
@@ -142,7 +186,7 @@ namespace Microsoft.AspNet.OData.Query
                 {
                     uriLiteral = ODataUriUtils.ConvertToUriLiteral(value, ODataVersion.V401, model);
                 }
-                skipTokenvalue += property.Name + PropertyDelimiter + uriLiteral + (islast ? String.Empty : CommaDelimiter.ToString());
+                skipTokenvalue += property.Name + _propertyDelimiter + uriLiteral + (islast ? String.Empty : CommaDelimiter.ToString());
                 count++;
             }
             return skipTokenvalue;
@@ -187,11 +231,17 @@ namespace Microsoft.AspNet.OData.Query
         /// Apply the $skiptoken query to the given IQueryable.
         /// </summary>
         /// <param name="query">The original <see cref="IQueryable"/>.</param>
-        /// <param name="querySettings">The query settings to use while applying this query option.</param>
-        /// <param name="orderByNodes">Information about the orderby query option.</param>
+        /// <param name="skipTokenQueryOption">The skiptoken query option which needs to be applied to this query option.</param>
         /// <returns>The new <see cref="IQueryable"/> after the skiptoken query has been applied to.</returns>
-        public override IQueryable<T> ApplyTo<T>(IQueryable<T> query, ODataQuerySettings querySettings, IList<OrderByNode> orderByNodes)
+        public override IQueryable<T> ApplyTo<T>(IQueryable<T> query, SkipTokenQueryOption skipTokenQueryOption)
         {
+            if (skipTokenQueryOption == null)
+            {
+                throw Error.ArgumentNullOrEmpty("skipTokenQueryOption");
+            }
+
+            ODataQuerySettings querySettings = skipTokenQueryOption.QuerySettings;
+            IList<OrderByNode> orderByNodes = skipTokenQueryOption.OrderByNodes;
             return ApplyToCore(query, querySettings, orderByNodes) as IOrderedQueryable<T>;
         }
 
@@ -199,11 +249,17 @@ namespace Microsoft.AspNet.OData.Query
         /// Apply the $skiptoken query to the given IQueryable.
         /// </summary>
         /// <param name="query">The original <see cref="IQueryable"/>.</param>
-        /// <param name="querySettings">The query settings to use while applying this query option.</param>
-        /// <param name="orderByNodes">Information about the orderby query option.</param>
+        /// <param name="skipTokenQueryOption">The skiptoken query option which needs to be applied to this query option.</param>
         /// <returns>The new <see cref="IQueryable"/> after the skiptoken query has been applied to.</returns>
-        public override IQueryable ApplyTo(IQueryable query, ODataQuerySettings querySettings, IList<OrderByNode> orderByNodes)
+        public override IQueryable ApplyTo(IQueryable query, SkipTokenQueryOption skipTokenQueryOption)
         {
+            if (skipTokenQueryOption == null)
+            {
+                throw Error.ArgumentNullOrEmpty("skipTokenQueryOption");
+            }
+
+            ODataQuerySettings querySettings = skipTokenQueryOption.QuerySettings;
+            IList<OrderByNode> orderByNodes = skipTokenQueryOption.OrderByNodes;
             return ApplyToCore(query, querySettings, orderByNodes);
         }
 
