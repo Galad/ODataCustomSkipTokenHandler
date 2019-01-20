@@ -2,11 +2,8 @@
 // Licensed under the MIT License.  See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNet.OData.Formatter.Serialization;
-using Microsoft.OData.Edm;
-using Microsoft.OData.UriParser;
 
 namespace Microsoft.AspNet.OData.Query
 {

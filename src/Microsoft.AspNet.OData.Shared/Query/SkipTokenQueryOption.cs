@@ -4,10 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using Microsoft.AspNet.OData.Common;
-using Microsoft.AspNet.OData.Interfaces;
-using Microsoft.AspNet.OData.Query.Expressions;
 using Microsoft.AspNet.OData.Query.Validators;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData;
