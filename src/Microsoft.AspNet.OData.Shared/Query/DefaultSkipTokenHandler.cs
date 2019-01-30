@@ -23,24 +23,33 @@ namespace Microsoft.AspNet.OData.Query
     {
         private IDictionary<string, object> _propertyValuePairs;
         private const char CommaDelimiter = ',';
+        private readonly ISkipTokenValueGenerator _skipTokenValueGenerator;
         private string _value;
-        private char _propertyDelimiter = ':';
-
-        /// <summary>
-        /// Constructor for DefaultSkipTokenHandler - Sets the Property Delimiter
-        /// </summary>
-        public DefaultSkipTokenHandler()
-        {
-            IsDeltaFeedSupported = false;
-        }
+        private readonly char _propertyDelimiter;
 
         /// <summary>
         /// Constructor for Unit testing purposes - Sets the Property Delimiter
         /// </summary>
-        public DefaultSkipTokenHandler(char delimiter)
+        public DefaultSkipTokenHandler() : this(':')
+        {
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="delimiter"></param>
+        public DefaultSkipTokenHandler(char delimiter) : this(delimiter, new DefaultSkipTokenValueGenerator(CommaDelimiter, delimiter))
+        {
+        }
+
+        /// <summary>
+        /// Constructor for DefaultSkipTokenHandler - Sets the Property Delimiter
+        /// </summary>
+        public DefaultSkipTokenHandler(char delimiter, ISkipTokenValueGenerator skipTokenValueGenerator)
         {
             _propertyDelimiter = delimiter;
             IsDeltaFeedSupported = false;
+            this._skipTokenValueGenerator = skipTokenValueGenerator;
         }
 
         /// <summary>
@@ -113,7 +122,7 @@ namespace Microsoft.AspNet.OData.Query
 
                 skipTokenGenerator = (obj) =>
                 {
-                    return GenerateSkipTokenValue(obj, model, orderByNodes);
+                    return _skipTokenValueGenerator.GenerateSkipTokenValue(obj, model, orderByNodes);
                 };
 
                 return GetNextPageHelper.GetNextPageLink(baseUri, pageSize, instance, skipTokenGenerator);
@@ -126,98 +135,10 @@ namespace Microsoft.AspNet.OData.Query
 
             skipTokenGenerator = (obj) =>
             {
-                return GenerateSkipTokenValue(obj, model, orderByNodes);
+                return _skipTokenValueGenerator.GenerateSkipTokenValue(obj, model, orderByNodes);
             };
 
             return context.InternalRequest.GetNextPageLink(pageSize, instance, skipTokenGenerator);
-        }
-
-        /// <summary>
-        /// Returns a function that converts an object to a skiptoken value string
-        /// </summary>
-        /// <param name="lastMember"> Object based on which SkipToken value will be generated.</param>
-        /// <param name="model">The edm model.</param>
-        /// <param name="orderByNodes">QueryOption </param>
-        /// <returns></returns>
-        public string GenerateSkipTokenValue(Object lastMember, IEdmModel model, IList<OrderByNode> orderByNodes)
-        {
-            object value;
-            if (lastMember == null)
-            {
-                return String.Empty;
-            }
-            IEnumerable<IEdmProperty> propertiesForSkipToken = GetPropertiesForSkipToken(lastMember, model, orderByNodes);
-
-            String skipTokenvalue = String.Empty;
-            if (propertiesForSkipToken == null)
-            {
-                return skipTokenvalue;
-            }
-
-            int count = 0;
-            int lastIndex = propertiesForSkipToken.Count() - 1;
-            foreach (IEdmProperty property in propertiesForSkipToken)
-            {
-                bool islast = count == lastIndex;
-                IEdmStructuredObject obj = lastMember as IEdmStructuredObject;
-                if (obj != null)
-                {
-                    obj.TryGetPropertyValue(property.Name, out value);
-                }
-                else
-                {
-                    value = lastMember.GetType().GetProperty(property.Name).GetValue(lastMember);
-                }
-
-                String uriLiteral = String.Empty;
-                if (value == null)
-                {
-                    uriLiteral = ODataUriUtils.ConvertToUriLiteral(value, ODataVersion.V401);
-                }
-                else if (TypeHelper.IsEnum(value.GetType()))
-                {
-                    ODataEnumValue enumValue = new ODataEnumValue(value.ToString(), value.GetType().FullName);
-                    uriLiteral = ODataUriUtils.ConvertToUriLiteral(enumValue, ODataVersion.V401, model);
-                    uriLiteral = "'enumType'" + uriLiteral;
-                }
-                else
-                {
-                    uriLiteral = ODataUriUtils.ConvertToUriLiteral(value, ODataVersion.V401, model);
-                }
-                skipTokenvalue += property.Name + _propertyDelimiter + uriLiteral + (islast ? String.Empty : CommaDelimiter.ToString());
-                count++;
-            }
-            return skipTokenvalue;
-        }
-
-        private static IEnumerable<IEdmProperty> GetPropertiesForSkipToken(object lastMember, IEdmModel model, IList<OrderByNode> orderByNodes)
-        {
-            IEdmType edmType = GetTypeFromObject(lastMember, model);
-            IEdmEntityType entity = edmType as IEdmEntityType;
-            if (entity == null)
-            {
-                return null;
-            }
-
-            IList<IEdmProperty> key = entity.Key().AsIList<IEdmProperty>();
-            if (orderByNodes != null)
-            {
-                OrderByOpenPropertyNode orderByOpenType = orderByNodes.OfType<OrderByOpenPropertyNode>().LastOrDefault();
-                if (orderByOpenType != null)
-                {
-                    //SkipToken will not support ordering on dynamic properties
-                    return null;
-                }
-
-                IList<IEdmProperty> orderByProps = orderByNodes.OfType<OrderByPropertyNode>().Select(p => p.Property).AsIList();
-                foreach (IEdmProperty subKey in key)
-                {
-                    orderByProps.Add(subKey);
-                }
-
-                return orderByProps.AsEnumerable();
-            }
-            return key.AsEnumerable();
         }
 
         /// <summary>
@@ -337,19 +258,6 @@ namespace Microsoft.AspNet.OData.Query
                 }
             }
             return directions;
-        }
-
-        private static IEdmType GetTypeFromObject(object obj, IEdmModel model)
-        {
-            SelectExpandWrapper selectExpand = obj as SelectExpandWrapper;
-            if (selectExpand != null)
-            {
-                IEdmTypeReference typeReference = selectExpand.GetEdmType();
-                return typeReference.Definition;
-            }
-
-            Type clrType = obj.GetType();
-            return EdmLibHelpers.GetEdmType(model, clrType);
         }
     }
 }

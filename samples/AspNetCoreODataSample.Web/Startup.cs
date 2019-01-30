@@ -8,6 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using AspNetCoreODataSample.Web.Models;
+using Microsoft.Data.Edm;
+using Microsoft.AspNet.OData.Query;
+using Microsoft.AspNet.OData.Routing.Conventions;
+using System.Collections.Generic;
+using Microsoft.OData;
 
 namespace AspNetCoreODataSample.Web
 {
@@ -40,14 +45,19 @@ namespace AspNetCoreODataSample.Web
 
             app.UseMvc(builder =>
             {
-                builder.Select().Expand().Filter().OrderBy().MaxTop(100).Count();
+                builder.Select().Expand().Filter().OrderBy().MaxTop(100).Count().SkipToken();
 
-                builder.MapODataServiceRoute("odata1", "efcore", model);
+                builder.MapODataServiceRoute("odata1", "efcore", c =>
+                    c.AddService(Microsoft.OData.ServiceLifetime.Singleton, _ => model)
+                     .AddService<SkipTokenHandler>(Microsoft.OData.ServiceLifetime.Scoped, _ => new HiddenIdSkipTokenHandler())
+                     .AddService<IEnumerable<IODataRoutingConvention>>(Microsoft.OData.ServiceLifetime.Singleton, sp =>
+                           ODataRoutingConventions.CreateDefaultWithAttributeRouting("odata1", builder))
+                );
 
-                builder.MapODataServiceRoute("odata2", "inmem", model);
+            builder.MapODataServiceRoute("odata2", "inmem", model);
 
-                builder.MapODataServiceRoute("odata3", "composite", EdmModelBuilder.GetCompositeModel());
-            });
+            builder.MapODataServiceRoute("odata3", "composite", EdmModelBuilder.GetCompositeModel());
+        });
         }
-    }
+}
 }

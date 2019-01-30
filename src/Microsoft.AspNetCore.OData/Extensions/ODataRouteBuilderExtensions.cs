@@ -571,7 +571,7 @@ namespace Microsoft.AspNet.OData.Extensions
         {
             return builder.MapODataServiceRoute(routeName, routePrefix, containerBuilder =>
                 containerBuilder.AddService(Microsoft.OData.ServiceLifetime.Singleton, sp => model)
-                       .AddService<IEnumerable<IODataRoutingConvention>>(Microsoft.OData.ServiceLifetime.Singleton, sp =>
+                                .AddService<IEnumerable<IODataRoutingConvention>>(Microsoft.OData.ServiceLifetime.Singleton, sp =>
                            ODataRoutingConventions.CreateDefaultWithAttributeRouting(routeName, builder)));
         }
 
