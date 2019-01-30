@@ -22,14 +22,15 @@ namespace AspNetCoreODataSample.Web.Controllers
 
             if (_context.Movies.Count() == 0)
             {
-                Movie m = new Movie
+                _context.Movies.AddRange(Enumerable.Range(0, 95).Select(i => new Movie
                 {
-                    Title = "Conan",
+                    ID = i + 1,
+                    HiddenId = 1000 + i,
+                    Title = "Other " + i.ToString(),
                     ReleaseDate = new DateTimeOffset(new DateTime(2017, 3, 3)),
-                    Genre = Genre.Comedy,
-                    Price = 1.99m
-                };
-                _context.Movies.Add(m);
+                    Genre = Genre.Adult,
+                    Price = 91.99m + 10 % (i + 1)
+                }));
                 _context.SaveChanges();
             }
 
@@ -38,6 +39,7 @@ namespace AspNetCoreODataSample.Web.Controllers
                 new Movie
                 {
                     ID = 1,
+                    HiddenId = 1,
                     Title = "Conan",
                     ReleaseDate = new DateTimeOffset(new DateTime(2018, 3, 3)),
                     Genre = Genre.Comedy,
@@ -46,15 +48,16 @@ namespace AspNetCoreODataSample.Web.Controllers
                 new Movie
                 {
                     ID = 2,
+                    HiddenId = 2,
                     Title = "James",
                     ReleaseDate = new DateTimeOffset(new DateTime(2017, 3, 3)),
                     Genre = Genre.Adult,
                     Price = 91.99m
                 }
-            };
+            }.ToList();
         }
 
-        [EnableQuery]
+        [EnableQuery(PageSize = 10)]
         public IActionResult Get()
         {
             if (Request.Path.Value.Contains("efcore"))

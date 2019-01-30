@@ -5,7 +5,7 @@ using System;
 
 namespace AspNetCoreODataSample.Web.Models
 {
-    public class Movie
+    public class Movie : Record
     {
         public int ID { get; set; }
 
